@@ -17,3 +17,10 @@ typedef struct Chip8 {
     unsigned char st_register;
 
 } Chip8; 
+
+
+void cpu_init(Chip8 *cpu);
+void cpu_execute(Chip8 *cpu);
+
+
+
