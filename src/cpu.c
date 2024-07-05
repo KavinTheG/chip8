@@ -1,10 +1,18 @@
-#include <cpu.h>
+#include "cpu.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h> 
+#include <sys/stat.h>
 
-unsigned char memory[4096];
+// 4K byte memory
+unsigned char memory[4096] = {0};
+
+// 64 x 32 display
+unsigned char display[2048] = {0};
+
+// Keypad
+unsigned char keys[16] = {0};
 
 // Fonts 
 unsigned char chip8_fontset[80] = {
@@ -32,7 +40,36 @@ void cpu_init(Chip8 *cpu) {
     cpu->index_register = 0x0;
     cpu->pc_register = 0x200;
     cpu->sp_register = 0x0;
+
+    // Initialize timers
+    cpu->dt_register = 0x0;
+    cpu->st_register = 0x0;
+
+    // Initialize graphics
+    init_graphics();
+
+    // Load fontset
     memcpy(&memory[0x50], chip8_fontset, 80);
+}
+
+void load_rom(Chip8 *cpu, char *filename) {
+    
+    FILE* ptr;
+
+    // Open file in reading mode
+    ptr = fopen(filename, "rb");
+
+    if (NULL == ptr)
+        printf("NULL file.\n");
+
+    struct stat st;
+
+    fstat(filename, &st);
+
+    size_t file_size = st.st_size;
+
+    size_t bytes_read = fread(memory + 0x200, 1, sizeof(memory) - 0x200, ptr);
+
 }
 
 void cpu_execute(Chip8 *cpu ) {
@@ -40,6 +77,7 @@ void cpu_execute(Chip8 *cpu ) {
     // Fetch opcode from memory at program counter
     cpu->opcode = (memory[cpu->pc_register] << 8) | memory[cpu->pc_register + 1];
     cpu->pc_register += 2;
+    cpu->draw_flag = 0;
 
     switch (cpu->opcode & 0xF000) {
 
@@ -51,7 +89,10 @@ void cpu_execute(Chip8 *cpu ) {
                 case 0x00E0:
                     // CLS - 0x00e0
 
-                    // Clear display
+                    cpu->draw_flag = 1;
+                    for (int i = 0; i < 2048; i++) {
+                        display[i] = 0;
+                    }
                     break;
 
                 case 0x00EE:
@@ -239,7 +280,40 @@ void cpu_execute(Chip8 *cpu ) {
             // DRW Vx, Vy, nibble - 0xDxyn
             // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision
 
+            // Get height of sprite from n value
+            unsigned short height = cpu->opcode & 0x000F;
+            
+            // Get x and y values
+            unsigned short x = cpu->vx[(cpu->opcode & 0x0F00) >> 8];
+            unsigned short y = cpu->vx[(cpu->opcode & 0x00F0) >> 4];
+            unsigned short px;
+
+            // Set collision flag to 0
+            cpu->vx[15] = 0;
+
+            // Loop through height
+            for (int i = 0; i < height; i++) {
+
+                // Get pixel value from memory at location I
+                px = memory[cpu->index_register + i];
+
+                // Loop through width
+                for (int j = 0; j < 8; j++) {
+                    
+                    if ((px & (0x80 >> j)) != 0) {
+                        if (display[(x + j + ((y + i) * 64))] == 1) {
+                            cpu->vx[15] = 1;
+                        }
+
+                        // XORing 1 with the pixel value
+                        display[(x + j + ((y + i) * 64))] ^= 1;
+                    }
+                }
+            }
+
+            cpu->draw_flag = 1;
             break; 
+        
         
         case 0xE000:
 
