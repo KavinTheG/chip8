@@ -1,22 +1,35 @@
 typedef struct Chip8
 {
-    unsigned char opcode;
 
-    int index_register;
+    // opcode   
+    unsigned short opcode;
 
-    int pc_register;
+    // index register
+    unsigned short index_register;
 
-    int sp_register;
+    // program counter register
+    unsigned short pc_register;
 
-    int stack[16];
+    // stack pointer register
+    unsigned short sp_register;
 
+    // stack
+    unsigned short stack[16];
+
+    // Gneeral purpose registers
     unsigned char vx[16];
 
+    // Timers
     unsigned char dt_register;
 
+    // Sound
     unsigned char st_register;
 
+    // Draw flag
     unsigned char draw_flag;
+
+    // Sound flag
+    unsigned char sound_flag;
 
 } Chip8;
 

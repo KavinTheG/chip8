@@ -23,28 +23,10 @@ int main(int argc, char *argv[]) {
         cpu_execute(&cpu);
         
         // Draw display
-        draw_display(display);
+        if (cpu.draw_flag == 1)
+            draw_display(&display);
 
         // Handle keypress
-        handle_keypress(&cpu);
+        handle_keypress(&keys, &running);
     }
-
-
 }
-
-/*
-Pseudocode
-
-
-main {
-    f = read(rom file);
-    cpu = chip8();
-
-    for (i = 0; i < f.length; i++) {
-        cpu.execute(f[i]);
-        cpu.update_timers();
-    }
-
-}
-
-*/
