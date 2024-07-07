@@ -32,4 +32,4 @@ peripherals.o: peripherals.c
 # Clean target
 clean:
 	@echo "Removing all object files"
-	rm -f $(OBJS) final
+	rm -r *.o

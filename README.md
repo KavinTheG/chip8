@@ -21,7 +21,57 @@ The following items are required for this program to function:
 Proceed through the following steps to make use of this project and play some chip8 games!
 
 Git clone the repository with the following command: 
+
 ```
 git clone https://github.com/KavinTheG/chip8.git
 ```
+
+Change directory to my chip8 project directory
+
+```
+cd chip8
+```
+
+Enter the following command to build the project
+
+```
+Make
+```
+
+This will create a binary file capable of running chip8 games. You can view this in the ./bin/ folder. I have two chip8 rom files included in ./roms/ which may be ran by executing the following command.
+
+```
+bin/chip8 roms/Space\ Invaders\ \[David\ Winter\].ch8
+```
+
+### Keyboard mapping 
+
+The two tables below display how I implemented the mapping from the chip8 keypad to a typical keyboard. Essentially the left half of the keyboard is used to play gammes.
+
+| CHIP-8 | CHIP-8 | CHIP-8 | CHIP-8 |
+|--------|--------|--------|--------|
+| 1      | 2      | 3      | C      |
+| 4      | 5      | 6      | D      |
+| 7      | 8      | 9      | E      |
+| A      | 0      | B      | F      |
+
+| Keyboard | Keyboard | Keyboard | Keyboard |
+|----------|----------|----------|----------|
+| 1        | 2        | 3        | 4        |
+| Q        | W        | E        | R        |
+| A        | S        | D        | F        |
+| Z        | X        | C        | V        |
+
+
+## Demo images
+
+
+## Credit 
+The following resources provided much guidance in implementing this project. 
+
+- http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
+
+
+
+
 
