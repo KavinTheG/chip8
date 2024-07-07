@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -I/opt/homebrew/include -I./include -lSDL2
-LDFLAGS = -L/opt/homebrew/lib 
+CFLAGS = -I/opt/homebrew/include -I./include -Wall
+LDFLAGS = -L/opt/homebrew/lib -lSDL2 
 VPATH = src
 
 # Define object files
@@ -12,24 +12,28 @@ all: final
 # Link the final executable
 final: $(OBJS)
 	@echo "Linking and producing the final application"
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o ./bin/chip8
+	$(CC) $(LDFLAGS) $(OBJS) -o ./bin/chip8
 
 # Compile main.c
-main.o: main.c
+./build/main.o: main.c | ./build
 	@echo "Compiling main.c"
-	$(CC) $(CFLAGS) -c $< -o ./build/$@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Compile cpu.c
-cpu.o: cpu.c
+./build/cpu.o: cpu.c | ./build
 	@echo "Compiling cpu.c"
-	$(CC) $(CFLAGS) -c $< -o ./build/$@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Compile peripherals.c
-peripherals.o: peripherals.c
+./build/peripherals.o: peripherals.c | ./build
 	@echo "Compiling peripherals.c"
-	$(CC) $(CFLAGS) -c $< -o ./build/$@
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Ensure build directory exists
+./build:
+	@mkdir -p ./build
 
 # Clean target
 clean:
 	@echo "Removing all object files"
-	rm -r ./build/*.o
+	rm -r ./build/*.o ./bin/*
