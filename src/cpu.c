@@ -83,7 +83,7 @@ void cpu_execute(Chip8 *cpu)
     // Fetch opcode from memory at program counter
     cpu->opcode = (memory[cpu->pc_register] << 8) | memory[cpu->pc_register + 1];
     cpu->pc_register += 2;
-    cpu->draw_flag = 0;
+    draw_flag = 0;
 
     switch (cpu->opcode & 0xF000)
     {
@@ -99,7 +99,7 @@ void cpu_execute(Chip8 *cpu)
             fprintf(stdout, "Executing CLS (0x00E0)\n");
 
             // Clear the display
-            cpu->draw_flag = 1;
+            //cpu->draw_flag = 1;
             for (int i = 0; i < 2048; i++)
             {
                 display[i] = 0;
@@ -115,16 +115,16 @@ void cpu_execute(Chip8 *cpu)
             cpu->pc_register = cpu->stack[cpu->sp_register];
 
             // Decrease stack pointer
-            cpu->sp_register -= 1;
+            cpu->sp_register--;
             break;
 
-        default:
+        /*default:
             // SYS addr - 0x0nnn
             fprintf(stdout, "Executing SYS (0x0nnn) with address %x\n", cpu->opcode & 0x0FFF);
 
             // Sets program counter to nnn
             cpu->pc_register = cpu->opcode & 0x0FFF;
-            break;
+            break;*/
         }
         break;
 
@@ -366,7 +366,7 @@ void cpu_execute(Chip8 *cpu)
             }
         }
 
-        cpu->draw_flag = 1;
+        draw_flag = 1;
         break;
 
     case 0xE000:
@@ -378,11 +378,19 @@ void cpu_execute(Chip8 *cpu)
             fprintf(stdout, "Executing SKP (0xEx9E) to skip next instruction if key in V%x is pressed\n",
                     (cpu->opcode & 0x0F00) >> 8);
 
+            if (keys[cpu->vx[(cpu->opcode & 0x0F00) >> 8]]) {
+                cpu->pc_register += 2;
+            }
+
             break;
 
         case 0x00A1:
             fprintf(stdout, "Executing SKNP (0xExA1) to skip next instruction if key in V%x is not pressed\n",
                     (cpu->opcode & 0x0F00) >> 8);
+
+            if (!keys[cpu->vx[(cpu->opcode & 0x0F00) >> 8]]) {
+                cpu->pc_register += 2;
+            }
 
             break;
         }
@@ -409,6 +417,14 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0x0F00) >> 8);
 
             // Implement key press handling here
+    
+                for (int i = 0; i < 16; i++) {
+                    if (keys[i]) {
+                        cpu->vx[(cpu->opcode & 0x0F00) >> 8] = i;
+                        break;
+                    }
+                }
+            
             break;
 
         case 0x0015:
@@ -445,6 +461,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0x0F00) >> 8);
 
             // Implement sprite location calculation here
+            cpu->index_register = cpu->vx[(cpu->opcode & 0x0F00) >> 8] * 5;
             break;
 
         case 0x0033:
@@ -454,6 +471,9 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0x0F00) >> 8);
 
             // Implement BCD conversion and storage here
+            memory[cpu->index_register] = cpu->vx[(cpu->opcode & 0x0F00) >> 8] / 100;
+            memory[cpu->index_register + 1] = (cpu->vx[(cpu->opcode & 0x0F00) >> 8] / 10) % 10;
+            memory[cpu->index_register + 2] = cpu->vx[(cpu->opcode & 0x0F00) >> 8] % 100 % 10;
             break;
 
         case 0x0055:
@@ -479,19 +499,18 @@ void cpu_execute(Chip8 *cpu)
                 cpu->vx[i] = memory[cpu->index_register + i];
             }
             break;
-
-            break;
         }
     }
 
     if (cpu->dt_register > 0)
     {
-        cpu->dt_register--;
+        --cpu->dt_register;
     }
 
     if (cpu->st_register > 0)
     {
-        cpu->sound_flag = 1;
-        cpu->st_register--;
+        //cpu->sound_flag = 1;
+        fprintf(stdout, "BEEP!\n");
+        --cpu->st_register;
     }
 }

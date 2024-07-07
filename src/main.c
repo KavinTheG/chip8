@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <unistd.h>
+
 #include "cpu.h"
 #include "peripherals.h"
 #include "stdbool.h"
@@ -21,12 +23,17 @@ int main(int argc, char *argv[]) {
 
         // Parse opcode and execute
         cpu_execute(&cpu);
-        
-        // Draw display
-        if (cpu.draw_flag == 1)
-            draw_display(&display);
 
         // Handle keypress
-        handle_keypress(&keys, &running);
+        handle_keypress(keys, &running);
+
+        // Draw display
+        if (draw_flag == 1)
+            draw_display(display);
+
+        usleep(1500);
     }
+
+    quit_graphics();
+    return 0;
 }

@@ -25,12 +25,6 @@ typedef struct Chip8
     // Sound
     unsigned char st_register;
 
-    // Draw flag
-    unsigned char draw_flag;
-
-    // Sound flag
-    unsigned char sound_flag;
-
 } Chip8;
 
 // 4K byte memory
@@ -41,6 +35,12 @@ unsigned char display[2048];
 
 // Keypad
 unsigned char keys[16];
+
+// Draw flag
+unsigned char draw_flag;
+
+// Sound flag
+unsigned char sound_flag;
 
 void load_rom(Chip8 *cpu, char *filename);
 void cpu_init(Chip8 *cpu);

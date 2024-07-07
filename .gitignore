@@ -54,5 +54,7 @@ dkms.conf
 .vscode
 .vscode/*
 
-.roms
-.roms/*
+./roms
+./roms/*
+
+./bin/*

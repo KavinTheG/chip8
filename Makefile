@@ -12,7 +12,7 @@ all: final
 # Link the final executable
 final: $(OBJS)
 	@echo "Linking and producing the final application"
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o final
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o ./bin/final
 
 # Compile main.c
 main.o: main.c
