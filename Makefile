@@ -4,7 +4,7 @@ LDFLAGS = -L/opt/homebrew/lib
 VPATH = src
 
 # Define object files
-OBJS = main.o cpu.o peripherals.o
+OBJS = ./build/main.o ./build/cpu.o ./build/peripherals.o
 
 # Default target
 all: final
@@ -17,19 +17,19 @@ final: $(OBJS)
 # Compile main.c
 main.o: main.c
 	@echo "Compiling main.c"
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o ./build/$@
 
 # Compile cpu.c
 cpu.o: cpu.c
 	@echo "Compiling cpu.c"
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o ./build/$@
 
 # Compile peripherals.c
 peripherals.o: peripherals.c
 	@echo "Compiling peripherals.c"
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o ./build/$@
 
 # Clean target
 clean:
 	@echo "Removing all object files"
-	rm -r *.o
+	rm -r ./build/*.o
