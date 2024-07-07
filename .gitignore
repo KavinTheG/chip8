@@ -58,3 +58,5 @@ dkms.conf
 roms
 roms/*
 bin/
+assets
+assets/*

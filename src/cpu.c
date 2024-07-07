@@ -82,8 +82,8 @@ void cpu_execute(Chip8 *cpu)
 
     // Fetch opcode from memory at program counter
     cpu->opcode = (memory[cpu->pc_register] << 8) | memory[cpu->pc_register + 1];
-    cpu->pc_register += 2;
     draw_flag = 0;
+    sound_flag = 0;
 
     switch (cpu->opcode & 0xF000)
     {
@@ -99,11 +99,11 @@ void cpu_execute(Chip8 *cpu)
             fprintf(stdout, "Executing CLS (0x00E0)\n");
 
             // Clear the display
-            //cpu->draw_flag = 1;
             for (int i = 0; i < 2048; i++)
             {
                 display[i] = 0;
             }
+            cpu->pc_register += 2;
             break;
 
         case 0x00EE:
@@ -116,6 +116,7 @@ void cpu_execute(Chip8 *cpu)
 
             // Decrease stack pointer
             cpu->sp_register--;
+            cpu->pc_register += 2;
             break;
 
         /*default:
@@ -156,7 +157,7 @@ void cpu_execute(Chip8 *cpu)
         fprintf(stdout, "Executing SE (0x3xkk) on register V%x with value %x\n",
                 (cpu->opcode & 0x0F00) >> 8, cpu->opcode & 0x00FF);
 
-        cpu->pc_register += cpu->vx[(cpu->opcode & 0x0F00) >> 8] == (cpu->opcode & 0x00FF) ? 2 : 0;
+        cpu->pc_register += cpu->vx[(cpu->opcode & 0x0F00) >> 8] == (cpu->opcode & 0x00FF) ? 4 : 2;
         break;
 
     case 0x4000:
@@ -165,7 +166,7 @@ void cpu_execute(Chip8 *cpu)
         fprintf(stdout, "Executing SNE (0x4xkk) on register V%x with value %x\n",
                 (cpu->opcode & 0x0F00) >> 8, cpu->opcode & 0x00FF);
 
-        cpu->pc_register += cpu->vx[(cpu->opcode & 0x0F00) >> 8] != (cpu->opcode & 0x00FF) ? 2 : 0;
+        cpu->pc_register += cpu->vx[(cpu->opcode & 0x0F00) >> 8] != (cpu->opcode & 0x00FF) ? 4 : 2;
         break;
 
     case 0x5000:
@@ -174,7 +175,7 @@ void cpu_execute(Chip8 *cpu)
         fprintf(stdout, "Executing SE (0x5xy0) on registers V%x and V%x\n",
                 (cpu->opcode & 0x0F00) >> 8, (cpu->opcode & 0x00F0) >> 4);
 
-        cpu->pc_register += cpu->vx[(cpu->opcode & 0x0F00) >> 8] == cpu->vx[(cpu->opcode & 0x00F0) >> 4] ? 2 : 0;
+        cpu->pc_register += cpu->vx[(cpu->opcode & 0x0F00) >> 8] == cpu->vx[(cpu->opcode & 0x00F0) >> 4] ? 4 : 2;
         break;
 
     case 0x6000:
@@ -184,6 +185,7 @@ void cpu_execute(Chip8 *cpu)
                 (cpu->opcode & 0xF00) >> 8, cpu->opcode & 0x0FF);
 
         cpu->vx[(cpu->opcode & 0xF00) >> 8] = cpu->opcode & 0x0FF;
+        cpu->pc_register += 2;
         break;
 
     case 0x7000:
@@ -193,6 +195,7 @@ void cpu_execute(Chip8 *cpu)
                 (cpu->opcode & 0xF00) >> 8, cpu->opcode & 0x0FF);
 
         cpu->vx[(cpu->opcode & 0xF00) >> 8] += cpu->opcode & 0x0FF;
+        cpu->pc_register += 2;
         break;
 
     case 0x8000:
@@ -206,6 +209,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0xF00) >> 8, (cpu->opcode & 0x0F0) >> 4);
 
             cpu->vx[(cpu->opcode & 0xF00) >> 8] = cpu->vx[(cpu->opcode & 0x0F0) >> 4];
+            cpu->pc_register += 2;
             break;
 
         case 0x8001:
@@ -214,7 +218,8 @@ void cpu_execute(Chip8 *cpu)
             fprintf(stdout, "Executing OR (0x8xy1) on registers V%x and V%x\n",
                     (cpu->opcode & 0xF00) >> 8, (cpu->opcode & 0x0F0) >> 4);
 
-            cpu->vx[(cpu->opcode & 0xF00) >> 8] |= cpu->vx[(cpu->opcode & 0x0F0) >> 4];
+            cpu->vx[(cpu->opcode & 0xF00) >> 8] = cpu->vx[(cpu->opcode & 0xF00) >> 8] | cpu->vx[(cpu->opcode & 0x0F0) >> 4];
+            cpu->pc_register += 2;
             break;
 
         case 0x8002:
@@ -224,6 +229,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0xF00) >> 8, (cpu->opcode & 0x0F0) >> 4);
 
             cpu->vx[(cpu->opcode & 0xF00) >> 8] &= cpu->vx[(cpu->opcode & 0x0F0) >> 4];
+            cpu->pc_register += 2;
             break;
 
         case 0x8003:
@@ -233,6 +239,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0xF00) >> 8, (cpu->opcode & 0x0F0) >> 4);
 
             cpu->vx[(cpu->opcode & 0xF00) >> 8] ^= cpu->vx[(cpu->opcode & 0x0F0) >> 4];
+            cpu->pc_register += 2;
             break;
 
         case 0x8004:
@@ -240,8 +247,10 @@ void cpu_execute(Chip8 *cpu)
             // Set Vx = Vx + Vy
             fprintf(stdout, "Executing ADD (0x8xy4) on registers V%x and V%x\n",
                     (cpu->opcode & 0xF00) >> 8, (cpu->opcode & 0x0F0) >> 4);
-
+        
+            cpu->vx[15] = (cpu->vx[(cpu->opcode & 0xF00) >> 8] + cpu->vx[(cpu->opcode & 0x0F0) >> 4]) > 0xFF ? 1 : 0;
             cpu->vx[(cpu->opcode & 0xF00) >> 8] += cpu->vx[(cpu->opcode & 0x0F0) >> 4];
+            cpu->pc_register += 2;
             break;
 
         case 0x8005:
@@ -254,6 +263,7 @@ void cpu_execute(Chip8 *cpu)
 
             // VF is set to 1 if there's no borrow, otherwise 0
             cpu->vx[15] = cpu->vx[(cpu->opcode & 0xF00) >> 8] > cpu->vx[(cpu->opcode & 0x0F0) >> 4] ? 1 : 0;
+            cpu->pc_register += 2;
             break;
 
         case 0x8006:
@@ -262,10 +272,11 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0xF00) >> 8);
 
             // VF is set to the least significant bit of Vx
-            cpu->vx[15] = cpu->vx[(cpu->opcode & 0xF00) >> 8] & 0x01;
+            cpu->vx[15] = cpu->vx[(cpu->opcode & 0xF00) >> 8] & 0x1;
 
             // Set Vx = Vx >> 1, i.e. divide Vx by 2
             cpu->vx[(cpu->opcode & 0xF00) >> 8] >>= 1;
+            cpu->pc_register += 2;
             break;
 
         case 0x8007:
@@ -274,7 +285,9 @@ void cpu_execute(Chip8 *cpu)
             fprintf(stdout, "Executing SUBN (0x8xy7) on registers V%x and V%x\n",
                     (cpu->opcode & 0xF00) >> 8, (cpu->opcode & 0x0F0) >> 4);
 
+            cpu->vx[15] = cpu->vx[(cpu->opcode & 0x0F0) >> 4] > cpu->vx[(cpu->opcode & 0xF00) >> 8] ? 1 : 0;
             cpu->vx[(cpu->opcode & 0xF00) >> 8] = cpu->vx[(cpu->opcode & 0x0F0) >> 4] - cpu->vx[(cpu->opcode & 0xF00) >> 8];
+            cpu->pc_register += 2;
             break;
 
         case 0x800E:
@@ -283,10 +296,11 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0xF00) >> 8);
 
             // VF is set to the most significant bit of Vx
-            cpu->vx[15] = cpu->vx[(cpu->opcode & 0xF00) >> 8] & 0x80;
+            cpu->vx[15] = cpu->vx[(cpu->opcode & 0xF00) >> 8] >> 7 & 0x1;
 
             // Set Vx = Vx << 1, i.e. multiply Vx by 2
             cpu->vx[(cpu->opcode & 0xF00) >> 8] <<= 1;
+            cpu->pc_register += 2;
             break;
         }
         break;
@@ -297,7 +311,7 @@ void cpu_execute(Chip8 *cpu)
         fprintf(stdout, "Executing SNE (0x9xy0) on registers V%x and V%x\n",
                 (cpu->opcode & 0x0F00) >> 8, (cpu->opcode & 0x00F0) >> 4);
 
-        cpu->pc_register += (cpu->vx[(cpu->opcode & 0x0F00) >> 8] != cpu->vx[(cpu->opcode & 0x00F0) >> 4]) ? 2 : 0;
+        cpu->pc_register += (cpu->vx[(cpu->opcode & 0x0F00) >> 8] != cpu->vx[(cpu->opcode & 0x00F0) >> 4]) ? 4 : 2;
         break;
 
     case 0xA000:
@@ -306,6 +320,7 @@ void cpu_execute(Chip8 *cpu)
         fprintf(stdout, "Executing LD I (0xAnnn) with address %x\n", cpu->opcode & 0x0FFF);
 
         cpu->index_register = cpu->opcode & 0x0FFF;
+        cpu->pc_register += 2;
         break;
 
     case 0xB000:
@@ -314,7 +329,7 @@ void cpu_execute(Chip8 *cpu)
         fprintf(stdout, "Executing JP (0xBnnn) with address %x and V0 value %x\n",
                 cpu->opcode & 0x0FFF, cpu->vx[0]);
 
-        cpu->pc_register = cpu->opcode & 0x0FFF + cpu->vx[0];
+        cpu->pc_register = (cpu->opcode & 0x0FFF) + cpu->vx[0];
         break;
 
     case 0xC000:
@@ -324,6 +339,7 @@ void cpu_execute(Chip8 *cpu)
                 (cpu->opcode & 0x0F00) >> 8, rand() % 255, cpu->opcode & 0x00FF);
 
         cpu->vx[(cpu->opcode & 0x0F00) >> 8] = (rand() % 255) & (cpu->opcode & 0x00FF);
+        cpu->pc_register += 2;
         break;
 
     case 0xD000:
@@ -367,6 +383,7 @@ void cpu_execute(Chip8 *cpu)
         }
 
         draw_flag = 1;
+        cpu->pc_register += 2;
         break;
 
     case 0xE000:
@@ -382,6 +399,7 @@ void cpu_execute(Chip8 *cpu)
                 cpu->pc_register += 2;
             }
 
+            cpu->pc_register += 2;
             break;
 
         case 0x00A1:
@@ -392,6 +410,7 @@ void cpu_execute(Chip8 *cpu)
                 cpu->pc_register += 2;
             }
 
+            cpu->pc_register += 2;
             break;
         }
         break;
@@ -408,6 +427,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0x0F00) >> 8);
 
             cpu->vx[(cpu->opcode & 0x0F00) >> 8] = cpu->dt_register;
+            cpu->pc_register += 2;
             break;
 
         case 0x000A:
@@ -421,11 +441,12 @@ void cpu_execute(Chip8 *cpu)
                 for (int i = 0; i < 16; i++) {
                     if (keys[i]) {
                         cpu->vx[(cpu->opcode & 0x0F00) >> 8] = i;
+                        cpu->pc_register += 2;
                         break;
                     }
                 }
-            
-            break;
+                
+                break;
 
         case 0x0015:
             // LD DT, Vx - 0xFx15
@@ -434,6 +455,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0x0F00) >> 8);
 
             cpu->dt_register = cpu->vx[(cpu->opcode & 0x0F00) >> 8];
+            cpu->pc_register += 2;
             break;
 
         case 0x0018:
@@ -443,6 +465,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0x0F00) >> 8);
 
             cpu->st_register = cpu->vx[(cpu->opcode & 0x0F00) >> 8];
+            cpu->pc_register += 2;
             break;
 
         case 0x001E:
@@ -452,6 +475,7 @@ void cpu_execute(Chip8 *cpu)
                     (cpu->opcode & 0x0F00) >> 8);
 
             cpu->index_register += cpu->vx[(cpu->opcode & 0x0F00) >> 8];
+            cpu->pc_register += 2;
             break;
 
         case 0x0029:
@@ -462,6 +486,7 @@ void cpu_execute(Chip8 *cpu)
 
             // Implement sprite location calculation here
             cpu->index_register = cpu->vx[(cpu->opcode & 0x0F00) >> 8] * 5;
+            cpu->pc_register += 2;
             break;
 
         case 0x0033:
@@ -474,6 +499,7 @@ void cpu_execute(Chip8 *cpu)
             memory[cpu->index_register] = cpu->vx[(cpu->opcode & 0x0F00) >> 8] / 100;
             memory[cpu->index_register + 1] = (cpu->vx[(cpu->opcode & 0x0F00) >> 8] / 10) % 10;
             memory[cpu->index_register + 2] = cpu->vx[(cpu->opcode & 0x0F00) >> 8] % 100 % 10;
+            cpu->pc_register += 2;
             break;
 
         case 0x0055:
@@ -486,6 +512,7 @@ void cpu_execute(Chip8 *cpu)
             {
                 memory[cpu->index_register + i] = cpu->vx[i];
             }
+            cpu->pc_register += 2;
             break;
 
         case 0x0065:
@@ -498,6 +525,7 @@ void cpu_execute(Chip8 *cpu)
             {
                 cpu->vx[i] = memory[cpu->index_register + i];
             }
+            cpu->pc_register += 2;
             break;
         }
     }

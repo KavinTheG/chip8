@@ -4,7 +4,7 @@
 SDL_Window *window;
 SDL_Renderer *renderer;
 
-int scale = 8;
+int scale = 16;
 
 const static short keyboard[0x10] = {
     SDLK_x, // 0
@@ -32,7 +32,7 @@ void init_graphics() {
 }
 
 
-void draw_display(unsigned char *display[2048]) {
+void draw_display(unsigned char* display) {
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
