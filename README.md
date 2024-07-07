@@ -65,6 +65,14 @@ The two tables below display how I implemented the mapping from the chip8 keypad
 
 ## Demo images
 
+### Space Invaders
+<img src="https://github.com/KavinTheG/chip8/assets/25258108/b8cb0695-915c-43c7-ad97-57f5825e9a62" width="450">
+<img src="https://github.com/KavinTheG/chip8/assets/25258108/88d1357c-08d9-436b-89c0-d41c780c21e2" width="450">
+
+### Tic-Tac-Toe Invaders
+<img src="https://github.com/KavinTheG/chip8/assets/25258108/22895628-b2c8-4236-bfbf-12e51248cc96" width="450">
+<img src="https://github.com/KavinTheG/chip8/assets/25258108/4e9cb6d8-9f16-41c9-a0f2-b748f641d9a1" width="450">
+
 
 ## Credit 
 The following resources provided much guidance in implementing this project. 
