@@ -1,6 +1,6 @@
 # chip8
 
-This repository contains my code for a CHIP-8 intererter written in C. Essentially, this project is capable of interpreting every chip8 instruction and executing the appropriate function. The following features are includes in this project: 
+This repository contains my code for a CHIP-8 interpreter written in C. This project is capable of interpreting every chip8 instruction and executing the appropriate function. The following features are includes in this project: 
 
 - 4K memory 
 - 16 general purpose registers
